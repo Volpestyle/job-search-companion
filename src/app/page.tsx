@@ -1,5 +1,4 @@
-import Image from "next/image";
-import Nav from "./components/nav";
+import LandingPage from "./components/landingPage";
 export default function Home() {
-  return <div></div>;
+  return <LandingPage />;
 }
