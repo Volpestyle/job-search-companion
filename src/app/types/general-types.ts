@@ -11,4 +11,20 @@ interface Job {
   previewUrl: string;
 }
 
-export type { Job, JobStatus };
+interface JobSearchState {
+  isSearching: boolean;
+  keywords: string;
+  location: string;
+  remote: boolean;
+  experience: string[];
+  results: Job[];
+}
+
+export interface JobSearchParams {
+  keywords?: string;
+  location?: string;
+  remote?: boolean;
+  experience?: string[];
+}
+
+export type { Job, JobStatus, JobSearchState };

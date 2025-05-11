@@ -1,0 +1,72 @@
+/**
+ * Logger utility for consistent logging across the application
+ */
+
+type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+// Get log level from environment or default to 'info'
+const LOG_LEVEL = (process.env.LOG_LEVEL || 'info').toLowerCase() as LogLevel;
+
+// Log level hierarchy for filtering
+const LOG_LEVELS: Record<LogLevel, number> = {
+  debug: 0,
+  info: 1,
+  warn: 2,
+  error: 3
+};
+
+// Colors for different log levels (for server-side console)
+const COLORS = {
+  debug: '\x1b[36m', // Cyan
+  info: '\x1b[32m',  // Green
+  warn: '\x1b[33m',  // Yellow
+  error: '\x1b[31m', // Red
+  reset: '\x1b[0m'   // Reset
+};
+
+/**
+ * Checks if the given log level should be displayed based on the configured level
+ */
+function shouldLog(level: LogLevel): boolean {
+  return LOG_LEVELS[level] >= LOG_LEVELS[LOG_LEVEL];
+}
+
+/**
+ * Log a message at the specified level
+ */
+function log(level: LogLevel, message: string, meta?: any): void {
+  if (!shouldLog(level)) return;
+
+  const timestamp = new Date().toISOString();
+  const prefix = `[${timestamp}] [${level.toUpperCase()}]`;
+  
+  // Add color in server environment
+  const formattedPrefix = typeof window === 'undefined' 
+    ? `${COLORS[level]}${prefix}${COLORS.reset}`
+    : prefix;
+
+  const logMessage = `${formattedPrefix} ${message}`;
+  
+  switch (level) {
+    case 'debug':
+      console.debug(logMessage, meta || '');
+      break;
+    case 'info':
+      console.info(logMessage, meta || '');
+      break;
+    case 'warn':
+      console.warn(logMessage, meta || '');
+      break;
+    case 'error':
+      console.error(logMessage, meta || '');
+      break;
+  }
+}
+
+// Export logger functions
+export const logger = {
+  debug: (message: string, meta?: any) => log('debug', message, meta),
+  info: (message: string, meta?: any) => log('info', message, meta),
+  warn: (message: string, meta?: any) => log('warn', message, meta),
+  error: (message: string, meta?: any) => log('error', message, meta)
+};

@@ -9,10 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@browserbasehq/stagehand": "^2.2.1",
     "lucide-react": "^0.474.0",
     "next": "15.1.6",
+    "openai": "^4.98.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
