@@ -1,4 +1,4 @@
-import JobsContent from "./jobsContent";
+import JobsContent from './jobsContent';
 
 export default function JobsPage() {
   return (

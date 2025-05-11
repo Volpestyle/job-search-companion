@@ -3,34 +3,24 @@
  * Based on Stagehand's LLMClient interface
  */
 
-import {
-  AvailableModel,
-  CreateChatCompletionOptions,
-  LLMClient,
-} from "@browserbasehq/stagehand";
-import OpenAI from "openai";
+import { AvailableModel, CreateChatCompletionOptions, LLMClient } from '@browserbasehq/stagehand';
+import OpenAI from 'openai';
 import type {
   ChatCompletion,
   ChatCompletionCreateParams,
-  ChatCompletionChunk
-} from "openai/resources";
-import { Stream } from "openai/streaming";
+  ChatCompletionChunk,
+} from 'openai/resources';
+import { Stream } from 'openai/streaming';
 
 /**
  * This client adapts the OpenAI client to work with Stagehand's LLMClient interface
  * specifically for connecting to Ollama
  */
 export class OllamaClient extends LLMClient {
-  public type = "openai" as const;
+  public type = 'openai' as const;
   private client: OpenAI;
 
-  constructor({
-    modelName,
-    client,
-  }: {
-    modelName: string;
-    client: OpenAI;
-  }) {
+  constructor({ modelName, client }: { modelName: string; client: OpenAI }) {
     super(modelName as AvailableModel);
     this.client = client;
     this.modelName = modelName as AvailableModel;
@@ -42,14 +32,14 @@ export class OllamaClient extends LLMClient {
     logger,
   }: CreateChatCompletionOptions): Promise<T> {
     if (!options) {
-      throw new Error("Options must be provided for chat completion");
+      throw new Error('Options must be provided for chat completion');
     }
 
     const { requestId, ...optionsWithoutRequestId } = options;
 
     logger({
-      category: "openai",
-      message: "creating chat completion",
+      category: 'openai',
+      message: 'creating chat completion',
       level: 1,
       auxiliary: {
         options: {
@@ -57,11 +47,11 @@ export class OllamaClient extends LLMClient {
             ...optionsWithoutRequestId,
             requestId,
           }),
-          type: "object",
+          type: 'object',
         },
         modelName: {
           value: this.modelName,
-          type: "string",
+          type: 'string',
         },
       },
     });
@@ -70,7 +60,7 @@ export class OllamaClient extends LLMClient {
     let responseFormat = undefined;
     if (options.response_model) {
       responseFormat = {
-        type: "json_object" as "json_object",
+        type: 'json_object' as const,
       };
     }
 
@@ -82,26 +72,26 @@ export class OllamaClient extends LLMClient {
 
     try {
       // Make the request to the OpenAI client
-      const response = await this.client.chat.completions.create({
+      const response = (await this.client.chat.completions.create({
         ...openaiOptions,
         model: this.modelName,
         response_format: responseFormat,
         stream: false,
         temperature: options.temperature || 0.7,
-      } as ChatCompletionCreateParams) as ChatCompletion;
+      } as ChatCompletionCreateParams)) as ChatCompletion;
 
       logger({
-        category: "openai",
-        message: "response",
+        category: 'openai',
+        message: 'response',
         level: 1,
         auxiliary: {
           response: {
             value: JSON.stringify(response),
-            type: "object",
+            type: 'object',
           },
           requestId: {
-            value: requestId || "",
-            type: "string",
+            value: requestId || '',
+            type: 'string',
           },
         },
       });
@@ -109,20 +99,20 @@ export class OllamaClient extends LLMClient {
       if (options.response_model) {
         // Check if response and choices exist
         if (!response || !response.choices || !response.choices.length) {
-          throw new Error("Invalid response structure from OpenAI API");
+          throw new Error('Invalid response structure from OpenAI API');
         }
 
         const extractedData = response.choices[0]?.message?.content;
         if (!extractedData) {
-          throw new Error("No content in response");
+          throw new Error('No content in response');
         }
 
         let parsedData;
         try {
           parsedData = JSON.parse(extractedData);
         } catch (e) {
-          console.error("Failed to parse JSON response:", extractedData);
-          throw new Error("Invalid JSON in response");
+          console.error('Failed to parse JSON response:', extractedData);
+          throw new Error('Invalid JSON in response');
         }
 
         // Return model data response
@@ -137,16 +127,12 @@ export class OllamaClient extends LLMClient {
       }
 
       // Return text response
-      if (
-        !response.choices ||
-        !response.choices.length ||
-        !response.choices[0].message
-      ) {
-        throw new Error("Invalid response structure from OpenAI API");
+      if (!response.choices || !response.choices.length || !response.choices[0].message) {
+        throw new Error('Invalid response structure from OpenAI API');
       }
 
       return {
-        data: response.choices[0].message.content || "",
+        data: response.choices[0].message.content || '',
         usage: {
           prompt_tokens: response.usage?.prompt_tokens ?? 0,
           completion_tokens: response.usage?.completion_tokens ?? 0,
@@ -154,7 +140,7 @@ export class OllamaClient extends LLMClient {
         },
       } as T;
     } catch (error) {
-      console.error("Error in OpenAI API call:", error);
+      console.error('Error in OpenAI API call:', error);
 
       if (retries > 0) {
         console.log(`Retrying... (${retries} retries left)`);

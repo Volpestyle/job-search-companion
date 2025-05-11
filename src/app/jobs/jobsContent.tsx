@@ -1,17 +1,17 @@
-"use client";
-import { useState } from "react";
-import AgentControl from "../components/agentControl";
-import JobsTable from "../components/jobsTable";
-import { Job } from "../types/general-types";
+'use client';
+import { useState } from 'react';
+import AgentControl from '../components/agentControl';
+import JobsTable from '../components/jobsTable';
+import { Job } from '../types/general-types';
 
 export default function JobsContent({ initialJobs = [] }: { initialJobs?: Job[] }) {
   const [jobs, setJobs] = useState<Job[]>(initialJobs);
 
   const handleJobsFound = (newJobs: Job[]) => {
-    setJobs(prevJobs => {
+    setJobs((prevJobs) => {
       // Merge new jobs with existing ones, avoiding duplicates by id
-      const existingIds = new Set(prevJobs.map(job => job.id));
-      const uniqueNewJobs = newJobs.filter(job => !existingIds.has(job.id));
+      const existingIds = new Set(prevJobs.map((job) => job.id));
+      const uniqueNewJobs = newJobs.filter((job) => !existingIds.has(job.id));
 
       return [...prevJobs, ...uniqueNewJobs];
     });
@@ -22,7 +22,9 @@ export default function JobsContent({ initialJobs = [] }: { initialJobs?: Job[] 
       <AgentControl onJobsFound={handleJobsFound} />
 
       <div className="mt-6">
-        <h3 className="text-lg font-medium mb-4 text-[var(--foreground)]">Found Jobs ({jobs.length})</h3>
+        <h3 className="text-lg font-medium mb-4 text-[var(--foreground)]">
+          Found Jobs ({jobs.length})
+        </h3>
         {jobs.length > 0 ? (
           <JobsTable jobs={jobs} />
         ) : (

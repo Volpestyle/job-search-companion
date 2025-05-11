@@ -1,32 +1,101 @@
 # Job Search Companion
 
-This is a [Next.js](https://nextjs.org) project.
+A web application that helps automate the job search process using browser automation and AI.
 
-## Getting Started
+## Features
 
-First, run the development server:
+- Browser automation with Stagehand
+- LinkedIn job search integration
+- Local LLM integration with Ollama
+- AWS cloud integration (future)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Technology Stack
+
+- **Frontend**: Next.js 15, React 19, TailwindCSS
+- **Browser Automation**: Stagehand + Playwright
+- **LLM Integration**: Ollama, OpenAI-compatible API
+- **Cloud Infrastructure**: AWS (future implementation)
+
+## Local Development
+
+### Prerequisites
+
+- Node.js 20+
+- Ollama running locally or on a remote machine
+- Appropriate environment variables
+
+### Environment Variables
+
+Create a `.env.local` file with:
+
+```env
+# Ollama configuration
+OLLAMA_HOST=127.0.0.1
+OLLAMA_PORT=11434
+OLLAMA_MODEL=llama3
+
+# Stagehand configuration
+STAGEHAND_ENV=LOCAL
+USE_MOCK_DATA=false
+
+# AWS configuration (future)
+# AWS_REGION=us-east-1
+# AWS_ACCESS_KEY_ID=
+# AWS_SECRET_ACCESS_KEY=
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Getting Started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Install dependencies:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```bash
+   pnpm install
+   ```
 
-## Learn More
+2. Start the development server:
 
-To learn more about Next.js, take a look at the following resources:
+   ```bash
+   pnpm dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Code Formatting and Linting
+
+This project uses Prettier, ESLint, and Husky for code quality:
+
+```bash
+# Format all files
+pnpm format
+
+# Check formatting
+pnpm format:check
+
+# Run ESLint
+pnpm lint
+```
+
+Git hooks (via Husky) automatically run formatting and linting on commits.
+
+## Browser Automation
+
+The application uses Stagehand, which is built on top of Playwright, to automate browser interactions:
+
+- Opens LinkedIn and searches for jobs based on keywords and location
+- Extracts job details using AI
+- Provides a structured list of job opportunities
+
+## LLM Integration
+
+By default, the application connects to Ollama for LLM capabilities:
+
+- Uses a custom OpenAI-compatible client
+- Supports structured data extraction with Zod schemas
+- Can be configured to use different models
+
+## Future Improvements
+
+- AWS integration for cloud-based browser automation
+- Resume parsing and customization
+- Automated application submission
+- Interview preparation assistance

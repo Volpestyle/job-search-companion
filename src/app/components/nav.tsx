@@ -1,7 +1,7 @@
-"use client";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Briefcase } from "lucide-react";
+'use client';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Briefcase } from 'lucide-react';
 
 export default function Nav() {
   const pathname = usePathname();
@@ -12,9 +12,7 @@ export default function Nav() {
         <div className="flex justify-between h-16 items-center">
           <div className="flex items-center space-x-2">
             <Link href="/">
-              <h1 className="text-xl font-semibold text-[var(--foreground)]">
-                Turbo Job Hunt
-              </h1>
+              <h1 className="text-xl font-semibold text-[var(--foreground)]">Turbo Job Hunt</h1>
             </Link>
             <Briefcase className="w-6 h-6 text-[var(--accent)]" />
           </div>
@@ -22,9 +20,9 @@ export default function Nav() {
             <Link
               href="/profile"
               className={`px-3 py-2 text-sm font-medium ${
-                pathname === "/profile"
-                  ? "text-[var(--accent)] border-b-2 border-[var(--accent)]"
-                  : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                pathname === '/profile'
+                  ? 'text-[var(--accent)] border-b-2 border-[var(--accent)]'
+                  : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
               }`}
             >
               Profile
@@ -32,9 +30,9 @@ export default function Nav() {
             <Link
               href="/jobs"
               className={`px-3 py-2 text-sm font-medium ${
-                pathname === "/jobs"
-                  ? "text-[var(--accent)] border-b-2 border-[var(--accent)]"
-                  : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                pathname === '/jobs'
+                  ? 'text-[var(--accent)] border-b-2 border-[var(--accent)]'
+                  : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
               }`}
             >
               Jobs

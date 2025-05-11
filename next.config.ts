@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 /**
  * Next.js configuration for Stagehand integration
@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
       config.externals = [
         ...(Array.isArray(config.externals) ? config.externals : [config.externals]),
         'playwright-core',
-        'thread-stream'
+        'thread-stream',
       ];
     } else {
       config.externals = ['playwright-core', 'thread-stream'];
@@ -26,9 +26,9 @@ const nextConfig: NextConfig = {
     // Prevent client-side import of server-only modules
     config.resolve.alias = {
       ...config.resolve.alias,
-      'playwright': false,
+      playwright: false,
       '@playwright/test': false,
-      'thread-stream': false
+      'thread-stream': false,
     };
 
     return config;
@@ -36,8 +36,8 @@ const nextConfig: NextConfig = {
 
   // Tell Next.js to treat these packages as external in server components
   experimental: {
-    serverComponentsExternalPackages: ['thread-stream', 'playwright-core']
-  }
+    serverComponentsExternalPackages: ['thread-stream', 'playwright-core'],
+  },
 };
 
 export default nextConfig;

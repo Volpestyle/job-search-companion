@@ -1,12 +1,12 @@
-"use client";
-import { X, ExternalLink, ThumbsUp, ThumbsDown, BookmarkPlus } from "lucide-react";
-import { Job } from "../types/general-types";
-import { useState, useEffect } from "react";
+'use client';
+import { X, ExternalLink, ThumbsUp, ThumbsDown, BookmarkPlus } from 'lucide-react';
+import { Job } from '../types/general-types';
+import { useState, useEffect } from 'react';
 
 interface JobDetailsProps {
   job: Job;
   onClose: () => void;
-  onStatusChange?: (jobId: string, newStatus: "saved" | "ignored") => void;
+  onStatusChange?: (jobId: string, newStatus: 'saved' | 'ignored') => void;
 }
 
 export default function JobDetails({ job, onClose, onStatusChange }: JobDetailsProps) {
@@ -22,24 +22,24 @@ export default function JobDetails({ job, onClose, onStatusChange }: JobDetailsP
     setLoading(true);
     // In a real implementation, this would use the Stagehand service to
     // navigate to the job URL and extract the full description and details
-    
+
     // Mock implementation for now
     setTimeout(() => {
       setJobDetails({
         description: `This is a detailed description for the ${job.position} role at ${job.company}. 
         The ideal candidate will have experience with modern web technologies and frameworks.`,
         requirements: [
-          "5+ years of experience in software development",
-          "Strong JavaScript/TypeScript skills",
-          "Experience with React and Next.js",
-          "Knowledge of modern frontend tooling"
+          '5+ years of experience in software development',
+          'Strong JavaScript/TypeScript skills',
+          'Experience with React and Next.js',
+          'Knowledge of modern frontend tooling',
         ],
         benefits: [
-          "Competitive salary",
-          "Remote work options",
-          "Flexible hours",
-          "Health benefits"
-        ]
+          'Competitive salary',
+          'Remote work options',
+          'Flexible hours',
+          'Health benefits',
+        ],
       });
       setLoading(false);
     }, 1500);
@@ -51,12 +51,12 @@ export default function JobDetails({ job, onClose, onStatusChange }: JobDetailsP
   }, []);
 
   const handleSave = () => {
-    onStatusChange?.(job.id, "saved");
+    onStatusChange?.(job.id, 'saved');
     onClose();
   };
 
   const handleIgnore = () => {
-    onStatusChange?.(job.id, "ignored");
+    onStatusChange?.(job.id, 'ignored');
     onClose();
   };
 
@@ -65,11 +65,14 @@ export default function JobDetails({ job, onClose, onStatusChange }: JobDetailsP
       <div className="bg-[var(--background)] rounded-lg shadow-lg w-full max-w-3xl max-h-[80vh] overflow-y-auto">
         <div className="sticky top-0 bg-[var(--muted)] p-4 flex justify-between items-center border-b border-[var(--border)]">
           <h2 className="text-lg font-medium text-[var(--foreground)]">{job.position}</h2>
-          <button onClick={onClose} className="text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+          <button
+            onClick={onClose}
+            className="text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
-        
+
         <div className="p-6 space-y-6">
           <div className="flex justify-between items-start">
             <div>
@@ -77,7 +80,7 @@ export default function JobDetails({ job, onClose, onStatusChange }: JobDetailsP
               <p className="text-[var(--muted-foreground)]">{job.location}</p>
               {job.salary && <p className="text-[var(--accent)] font-medium mt-1">{job.salary}</p>}
             </div>
-            
+
             <div className="flex space-x-2">
               <a
                 href={job.previewUrl}
@@ -89,7 +92,7 @@ export default function JobDetails({ job, onClose, onStatusChange }: JobDetailsP
               </a>
             </div>
           </div>
-          
+
           {loading ? (
             <div className="py-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--foreground)] mx-auto"></div>
@@ -105,10 +108,12 @@ export default function JobDetails({ job, onClose, onStatusChange }: JobDetailsP
                   </div>
                 </div>
               )}
-              
+
               {jobDetails.requirements && jobDetails.requirements.length > 0 && (
                 <div>
-                  <h4 className="text-md font-medium mb-2 text-[var(--foreground)]">Requirements</h4>
+                  <h4 className="text-md font-medium mb-2 text-[var(--foreground)]">
+                    Requirements
+                  </h4>
                   <ul className="list-disc pl-5 text-sm text-[var(--muted-foreground)] space-y-1">
                     {jobDetails.requirements.map((req, index) => (
                       <li key={index}>{req}</li>
@@ -116,7 +121,7 @@ export default function JobDetails({ job, onClose, onStatusChange }: JobDetailsP
                   </ul>
                 </div>
               )}
-              
+
               {jobDetails.benefits && jobDetails.benefits.length > 0 && (
                 <div>
                   <h4 className="text-md font-medium mb-2 text-[var(--foreground)]">Benefits</h4>
@@ -130,7 +135,7 @@ export default function JobDetails({ job, onClose, onStatusChange }: JobDetailsP
             </>
           )}
         </div>
-        
+
         <div className="sticky bottom-0 bg-[var(--muted)] px-6 py-4 border-t border-[var(--border)] flex justify-end space-x-2">
           <button
             onClick={handleIgnore}
