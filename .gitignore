@@ -49,3 +49,9 @@ ehthumbs.db
 Thumbs.db
 
 **/.claude/settings.local.json
+
+# LinkedIn session data
+.linkedin-session/
+
+# Agent logs
+agent-logs/

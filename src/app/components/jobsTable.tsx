@@ -29,12 +29,27 @@ export default function JobsTable({ jobs, onStatusChange }: JobsTableProps) {
     }
   };
 
+  const getSourceBadge = (source?: string) => {
+    const colors: Record<string, string> = {
+      linkedin: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300',
+      indeed: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300',
+      glassdoor: 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300',
+      ziprecruiter: 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300',
+      dice: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300',
+    };
+
+    return colors[source || 'linkedin'] || colors.linkedin;
+  };
+
   return (
     <>
       <div className="shadow rounded-lg overflow-hidden bg-[var(--input)] border border-[var(--border)]">
         <table className="min-w-full divide-y divide-[var(--border)]">
           <thead className="bg-[var(--muted)]">
             <tr>
+              <th className="px-4 py-3 text-left text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
+                Source
+              </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
                 Position
               </th>
@@ -61,6 +76,13 @@ export default function JobsTable({ jobs, onStatusChange }: JobsTableProps) {
           <tbody className="divide-y divide-[var(--border)]">
             {jobs.map((job) => (
               <tr key={job.id} className="hover:bg-[var(--muted)]">
+                <td className="px-4 py-4">
+                  <span
+                    className={`inline-flex px-2 py-1 text-xs rounded-full capitalize ${getSourceBadge(job.source)}`}
+                  >
+                    {job.source || 'linkedin'}
+                  </span>
+                </td>
                 <td className="px-6 py-4">
                   <div className="text-sm font-medium text-[var(--foreground)]">{job.position}</div>
                 </td>

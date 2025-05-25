@@ -16,14 +16,22 @@ import { Stream } from 'openai/streaming';
  * This client adapts the OpenAI client to work with Stagehand's LLMClient interface
  * specifically for connecting to Ollama
  */
+interface OllamaClientOptions {
+  modelName: string;
+  client: OpenAI;
+  logger?: (message: string, data?: any) => void;
+}
+
 export class OllamaClient extends LLMClient {
   public type = 'openai' as const;
   private client: OpenAI;
+  private customLogger?: (message: string, data?: any) => void;
 
-  constructor({ modelName, client }: { modelName: string; client: OpenAI }) {
+  constructor({ modelName, client, logger }: OllamaClientOptions) {
     super(modelName as AvailableModel);
     this.client = client;
     this.modelName = modelName as AvailableModel;
+    this.customLogger = logger;
   }
 
   async createChatCompletion<T = ChatCompletion>({
@@ -36,6 +44,16 @@ export class OllamaClient extends LLMClient {
     }
 
     const { requestId, ...optionsWithoutRequestId } = options;
+
+    // Log to file if custom logger provided
+    if (this.customLogger) {
+      this.customLogger('LLM Request', {
+        model: this.modelName,
+        messages: options.messages,
+        temperature: options.temperature,
+        response_model: !!options.response_model,
+      });
+    }
 
     logger({
       category: 'openai',
@@ -79,6 +97,17 @@ export class OllamaClient extends LLMClient {
         stream: false,
         temperature: options.temperature || 0.7,
       } as ChatCompletionCreateParams)) as ChatCompletion;
+
+      // Log response to file if custom logger provided
+      if (this.customLogger) {
+        this.customLogger('LLM Response', {
+          model: this.modelName,
+          usage: response.usage,
+          responseLength: response.choices?.[0]?.message?.content?.length || 0,
+          // Only log first 500 chars of response to avoid huge logs
+          responseSample: response.choices?.[0]?.message?.content?.substring(0, 500),
+        });
+      }
 
       logger({
         category: 'openai',

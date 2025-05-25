@@ -9,6 +9,7 @@ interface Job {
   status: JobStatus;
   lastUpdated: string;
   previewUrl: string;
+  source?: 'linkedin' | 'indeed' | 'glassdoor' | 'ziprecruiter' | 'dice';
 }
 
 interface JobSearchState {

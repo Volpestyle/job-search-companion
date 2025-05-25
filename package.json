@@ -10,7 +10,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
-    "lint-staged": "lint-staged"
+    "lint-staged": "lint-staged",
+    "linkedin-auth": "tsx scripts/linkedin-auth.ts"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -28,6 +29,7 @@
     "openai": "^4.98.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "stagehand": "1.0.1",
     "zod": "^3.24.4"
   },
   "devDependencies": {
@@ -39,9 +41,11 @@
     "eslint-config-next": "15.1.6",
     "husky": "9.1.7",
     "lint-staged": "16.0.0",
+    "playwright": "1.52.0",
     "postcss": "^8",
     "prettier": "^3.5.3",
     "tailwindcss": "^3.4.1",
+    "tsx": "4.19.4",
     "typescript": "^5"
   }
 }

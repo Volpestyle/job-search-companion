@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { runStagehand } from '../api/stagehand/run';
 import { JobSearchState, Job } from '../types/general-types';
 import StatusIndicator from './statusIndicator';
+import ProgressBar from './progressBar';
 
 interface AgentControlProps {
   onJobsFound?: (jobs: Job[]) => void;
@@ -28,8 +29,23 @@ export default function AgentControl({ onJobsFound, useMock = false }: AgentCont
     message: '',
   });
 
+  const [sessionId, setSessionId] = useState<string | null>(null);
+
   const startSearch = async () => {
     if (searchState.isSearching) return;
+
+    // Validate required fields
+    if (!searchState.keywords.trim()) {
+      setStatus({
+        state: 'error',
+        message: 'Please enter job keywords or title to search',
+      });
+      return;
+    }
+
+    // Generate a new sessionId for this search
+    const newSessionId = `job-search-${Date.now()}`;
+    setSessionId(newSessionId);
 
     setSearchState((prev) => ({ ...prev, isSearching: true }));
     setStatus({
@@ -39,12 +55,15 @@ export default function AgentControl({ onJobsFound, useMock = false }: AgentCont
 
     try {
       // Call the server-side Stagehand function
-      const result = await runStagehand({
-        keywords: searchState.keywords,
-        location: searchState.location,
-        remote: searchState.remote,
-        experience: searchState.experience,
-      });
+      const result = await runStagehand(
+        {
+          keywords: searchState.keywords,
+          location: searchState.location,
+          remote: searchState.remote,
+          experience: searchState.experience,
+        },
+        newSessionId
+      );
 
       if (result.success) {
         setSearchState((prev) => ({
@@ -57,6 +76,11 @@ export default function AgentControl({ onJobsFound, useMock = false }: AgentCont
           state: 'success',
           message: `Found ${result.jobs.length} job listings!`,
         });
+
+        // Store sessionId for future use
+        if (result.sessionId) {
+          setSessionId(result.sessionId);
+        }
 
         if (onJobsFound) {
           onJobsFound(result.jobs);
@@ -115,8 +139,13 @@ export default function AgentControl({ onJobsFound, useMock = false }: AgentCont
           </button>
         </div>
 
-        {/* Search Parameters */}
-        <StatusIndicator status={status.state} message={status.message} />
+        {/* Progress Bar - shows when searching */}
+        {searchState.isSearching && sessionId && <ProgressBar sessionId={sessionId} />}
+
+        {/* Status Indicator - shows for errors and completion */}
+        {!searchState.isSearching && (
+          <StatusIndicator status={status.state} message={status.message} />
+        )}
 
         <div className="space-y-4 mt-4 mb-2">
           <div className="flex gap-4">
@@ -140,11 +169,14 @@ export default function AgentControl({ onJobsFound, useMock = false }: AgentCont
             <div className="flex-1">
               <div className="flex items-center mb-1">
                 <MapPin className="w-4 h-4 mr-1 text-[var(--muted-foreground)]" />
-                <label className="text-sm font-medium text-[var(--foreground)]">Location</label>
+                <label className="text-sm font-medium text-[var(--foreground)]">
+                  Location{' '}
+                  <span className="text-xs text-[var(--muted-foreground)]">(optional)</span>
+                </label>
               </div>
               <input
                 type="text"
-                placeholder="E.g., San Francisco, Remote"
+                placeholder="Auto-filled from your LinkedIn profile"
                 className="w-full px-3 py-2 border rounded-md border-[var(--border)] bg-transparent text-[var(--foreground)] placeholder-[var(--muted-foreground)]"
                 value={searchState.location}
                 onChange={(e) => setSearchState((prev) => ({ ...prev, location: e.target.value }))}
