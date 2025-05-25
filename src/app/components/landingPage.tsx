@@ -1,5 +1,5 @@
-"use client";
-import { ArrowRight, Bot, ThumbsUp, Play, UserCircle2 } from "lucide-react";
+'use client';
+import { ArrowRight, Bot, ThumbsUp, Play, UserCircle2 } from 'lucide-react';
 
 export default function LandingPage() {
   return (
@@ -12,10 +12,9 @@ export default function LandingPage() {
               your job search
             </h1>
             <p className="text-xl text-[var(--muted-foreground)] mb-8">
-              Let an AI agent handle the tedious parts of job hunting. Upload
-              your resume once, and watch as the agent finds and fills out
-              applications for you. You stay in control - review and approve
-              each submission.
+              Let an AI agent handle the tedious parts of job hunting. Upload your resume once, and
+              watch as the agent finds and fills out applications for you. You stay in control -
+              review and approve each submission.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <button
@@ -53,9 +52,7 @@ export default function LandingPage() {
             <div className="absolute -top-4 -right-4 bg-[var(--input)] rounded-lg shadow-lg shadow-[var(--border)] p-4">
               <div className="flex items-center space-x-2">
                 <ThumbsUp className="w-5 h-5 text-green-400" />
-                <span className="text-sm font-medium text-[var(--foreground)]">
-                  Auto-filled
-                </span>
+                <span className="text-sm font-medium text-[var(--foreground)]">Auto-filled</span>
               </div>
             </div>
           </div>
@@ -70,8 +67,8 @@ export default function LandingPage() {
               AI-Powered Search
             </h3>
             <p className="text-[var(--muted-foreground)]">
-              Our AI agent continuously scans job boards to find positions
-              matching your profile and preferences.
+              Our AI agent continuously scans job boards to find positions matching your profile and
+              preferences.
             </p>
           </div>
 
@@ -83,8 +80,8 @@ export default function LandingPage() {
               Automated Applications
             </h3>
             <p className="text-[var(--muted-foreground)]">
-              Save time with AI-powered form filling. Review and approve
-              applications before they're submitted.
+              Save time with AI-powered form filling. Review and approve applications before they're
+              submitted.
             </p>
           </div>
 
@@ -96,8 +93,8 @@ export default function LandingPage() {
               You're in Control
             </h3>
             <p className="text-[var(--muted-foreground)]">
-              Review each application before submission. Save interesting
-              positions or mark them as not interested.
+              Review each application before submission. Save interesting positions or mark them as
+              not interested.
             </p>
           </div>
         </div>

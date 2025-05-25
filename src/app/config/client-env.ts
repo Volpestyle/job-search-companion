@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 // A safe client-side environment configuration
 // This only includes environment variables that are safe to expose to the client

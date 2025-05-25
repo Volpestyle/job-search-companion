@@ -1,12 +1,12 @@
 /**
  * Types for Stagehand integration
  */
-import { LLMClient } from "@browserbasehq/stagehand";
+import { LLMClient } from '@browserbasehq/stagehand';
 
 /**
  * Stagehand environment types
  */
-export type StagehandEnvironment = "LOCAL" | "AWS";
+export type StagehandEnvironment = 'LOCAL' | 'AWS';
 
 /**
  * Configuration object for Stagehand

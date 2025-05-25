@@ -1,58 +1,58 @@
-"use client";
+'use client';
 
-import { Job, JobSearchParams } from "../types/general-types";
+import { Job, JobSearchParams } from '../types/general-types';
 
 export class MockJobService {
   private mockJobs: Job[] = [
     {
-      id: "mock-1",
-      company: "TechCorp Inc.",
-      position: "Senior Frontend Developer",
-      location: "San Francisco, CA",
-      salary: "$120,000 - $150,000",
-      status: "pending",
+      id: 'mock-1',
+      company: 'TechCorp Inc.',
+      position: 'Senior Frontend Developer',
+      location: 'San Francisco, CA',
+      salary: '$120,000 - $150,000',
+      status: 'pending',
       lastUpdated: new Date().toISOString(),
-      previewUrl: "https://example.com/job/1",
+      previewUrl: 'https://example.com/job/1',
     },
     {
-      id: "mock-2",
-      company: "Digital Solutions",
-      position: "Full Stack Engineer",
-      location: "Remote",
-      salary: "$100,000 - $130,000",
-      status: "pending",
+      id: 'mock-2',
+      company: 'Digital Solutions',
+      position: 'Full Stack Engineer',
+      location: 'Remote',
+      salary: '$100,000 - $130,000',
+      status: 'pending',
       lastUpdated: new Date().toISOString(),
-      previewUrl: "https://example.com/job/2",
+      previewUrl: 'https://example.com/job/2',
     },
     {
-      id: "mock-3",
-      company: "Innovation Labs",
-      position: "React Developer",
-      location: "New York, NY",
-      salary: "$90,000 - $110,000",
-      status: "pending",
+      id: 'mock-3',
+      company: 'Innovation Labs',
+      position: 'React Developer',
+      location: 'New York, NY',
+      salary: '$90,000 - $110,000',
+      status: 'pending',
       lastUpdated: new Date().toISOString(),
-      previewUrl: "https://example.com/job/3",
+      previewUrl: 'https://example.com/job/3',
     },
     {
-      id: "mock-4",
-      company: "Cloud Systems",
-      position: "DevOps Engineer",
-      location: "Seattle, WA",
-      salary: "$130,000 - $160,000",
-      status: "pending",
+      id: 'mock-4',
+      company: 'Cloud Systems',
+      position: 'DevOps Engineer',
+      location: 'Seattle, WA',
+      salary: '$130,000 - $160,000',
+      status: 'pending',
       lastUpdated: new Date().toISOString(),
-      previewUrl: "https://example.com/job/4",
+      previewUrl: 'https://example.com/job/4',
     },
     {
-      id: "mock-5",
-      company: "Data Insights",
-      position: "Frontend Engineer",
-      location: "Austin, TX",
-      salary: "$95,000 - $120,000",
-      status: "pending",
+      id: 'mock-5',
+      company: 'Data Insights',
+      position: 'Frontend Engineer',
+      location: 'Austin, TX',
+      salary: '$95,000 - $120,000',
+      status: 'pending',
       lastUpdated: new Date().toISOString(),
-      previewUrl: "https://example.com/job/5",
+      previewUrl: 'https://example.com/job/5',
     },
   ];
 
@@ -69,9 +69,7 @@ export class MockJobService {
     return this.mockJobs.filter((job) => {
       if (
         searchParams.keywords &&
-        !job.position
-          .toLowerCase()
-          .includes(searchParams.keywords.toLowerCase()) &&
+        !job.position.toLowerCase().includes(searchParams.keywords.toLowerCase()) &&
         !job.company.toLowerCase().includes(searchParams.keywords.toLowerCase())
       ) {
         return false;
@@ -79,17 +77,12 @@ export class MockJobService {
 
       if (
         searchParams.location &&
-        !job.location
-          .toLowerCase()
-          .includes(searchParams.location.toLowerCase())
+        !job.location.toLowerCase().includes(searchParams.location.toLowerCase())
       ) {
         return false;
       }
 
-      if (
-        searchParams.remote &&
-        !job.location.toLowerCase().includes("remote")
-      ) {
+      if (searchParams.remote && !job.location.toLowerCase().includes('remote')) {
         return false;
       }
 

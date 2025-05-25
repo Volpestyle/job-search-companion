@@ -1,8 +1,8 @@
-"use client";
-import { useState } from "react";
-import { Job, JobStatus } from "../types/general-types";
-import { BookmarkPlus, Eye, ThumbsUp, X } from "lucide-react";
-import JobDetails from "./jobDetails";
+'use client';
+import { useState } from 'react';
+import { Job, JobStatus } from '../types/general-types';
+import { BookmarkPlus, Eye, ThumbsUp, X } from 'lucide-react';
+import JobDetails from './jobDetails';
 
 interface JobsTableProps {
   jobs: Job[];
@@ -20,12 +20,12 @@ export default function JobsTable({ jobs, onStatusChange }: JobsTableProps) {
 
   const getStatusColor = (status: JobStatus) => {
     switch (status) {
-      case "saved":
-        return "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300";
-      case "ignored":
-        return "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300";
+      case 'saved':
+        return 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300';
+      case 'ignored':
+        return 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300';
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
     }
   };
 
@@ -62,27 +62,21 @@ export default function JobsTable({ jobs, onStatusChange }: JobsTableProps) {
             {jobs.map((job) => (
               <tr key={job.id} className="hover:bg-[var(--muted)]">
                 <td className="px-6 py-4">
-                  <div className="text-sm font-medium text-[var(--foreground)]">
-                    {job.position}
-                  </div>
+                  <div className="text-sm font-medium text-[var(--foreground)]">{job.position}</div>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm text-[var(--muted-foreground)]">
-                    {job.company}
-                  </div>
+                  <div className="text-sm text-[var(--muted-foreground)]">{job.company}</div>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm text-[var(--muted-foreground)]">
-                    {job.location}
-                  </div>
+                  <div className="text-sm text-[var(--muted-foreground)]">{job.location}</div>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm text-[var(--muted-foreground)]">
-                    {job.salary}
-                  </div>
+                  <div className="text-sm text-[var(--muted-foreground)]">{job.salary}</div>
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`inline-flex px-2 py-1 text-xs rounded-full ${getStatusColor(job.status)}`}>
+                  <span
+                    className={`inline-flex px-2 py-1 text-xs rounded-full ${getStatusColor(job.status)}`}
+                  >
                     {job.status.charAt(0).toUpperCase() + job.status.slice(1)}
                   </span>
                 </td>
@@ -100,14 +94,14 @@ export default function JobsTable({ jobs, onStatusChange }: JobsTableProps) {
                     <Eye className="w-5 h-5 inline" />
                   </button>
                   <button
-                    onClick={() => handleStatusChange(job.id, "saved")}
+                    onClick={() => handleStatusChange(job.id, 'saved')}
                     className="text-[var(--accent)] hover:text-[var(--accent-hover)]"
                     title="Save job"
                   >
                     <BookmarkPlus className="w-5 h-5 inline" />
                   </button>
                   <button
-                    onClick={() => handleStatusChange(job.id, "ignored")}
+                    onClick={() => handleStatusChange(job.id, 'ignored')}
                     className="text-red-400 hover:text-red-300"
                     title="Ignore job"
                   >

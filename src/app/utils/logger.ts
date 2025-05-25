@@ -12,16 +12,16 @@ const LOG_LEVELS: Record<LogLevel, number> = {
   debug: 0,
   info: 1,
   warn: 2,
-  error: 3
+  error: 3,
 };
 
 // Colors for different log levels (for server-side console)
 const COLORS = {
   debug: '\x1b[36m', // Cyan
-  info: '\x1b[32m',  // Green
-  warn: '\x1b[33m',  // Yellow
+  info: '\x1b[32m', // Green
+  warn: '\x1b[33m', // Yellow
   error: '\x1b[31m', // Red
-  reset: '\x1b[0m'   // Reset
+  reset: '\x1b[0m', // Reset
 };
 
 /**
@@ -39,14 +39,13 @@ function log(level: LogLevel, message: string, meta?: any): void {
 
   const timestamp = new Date().toISOString();
   const prefix = `[${timestamp}] [${level.toUpperCase()}]`;
-  
+
   // Add color in server environment
-  const formattedPrefix = typeof window === 'undefined' 
-    ? `${COLORS[level]}${prefix}${COLORS.reset}`
-    : prefix;
+  const formattedPrefix =
+    typeof window === 'undefined' ? `${COLORS[level]}${prefix}${COLORS.reset}` : prefix;
 
   const logMessage = `${formattedPrefix} ${message}`;
-  
+
   switch (level) {
     case 'debug':
       console.debug(logMessage, meta || '');
@@ -68,5 +67,5 @@ export const logger = {
   debug: (message: string, meta?: any) => log('debug', message, meta),
   info: (message: string, meta?: any) => log('info', message, meta),
   warn: (message: string, meta?: any) => log('warn', message, meta),
-  error: (message: string, meta?: any) => log('error', message, meta)
+  error: (message: string, meta?: any) => log('error', message, meta),
 };

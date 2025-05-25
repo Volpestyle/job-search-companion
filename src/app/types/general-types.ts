@@ -1,4 +1,4 @@
-type JobStatus = "pending" | "saved" | "ignored";
+type JobStatus = 'pending' | 'saved' | 'ignored';
 
 interface Job {
   id: string;

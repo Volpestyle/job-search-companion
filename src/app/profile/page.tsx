@@ -1,4 +1,4 @@
-import ProfileContent from "./profileContent";
+import ProfileContent from './profileContent';
 
 export default function Profile() {
   return <ProfileContent />;

@@ -1,0 +1,35 @@
+# Build outputs
+.next/
+out/
+dist/
+build/
+
+# Node modules
+node_modules/
+
+# Package files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Generated files
+**/*.generated.*
+**/*.gen.*
+**/*.d.ts
+
+# Public assets
+public/
+
+# Vercel
+.vercel/
+
+# Environment variables
+.env*
+!.env.example
+
+# IDE specific files
+.idea/
+.vscode/
+
+# Coverage reports
+coverage/

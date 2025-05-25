@@ -1,9 +1,9 @@
-"use client";
-import { Play, Pause, Search, MapPin, CheckSquare } from "lucide-react";
-import { useState, useEffect } from "react";
-import { runStagehand } from "@/app/api/stagehand/run";
-import { JobSearchState, Job } from "../types/general-types";
-import StatusIndicator from "./statusIndicator";
+'use client';
+import { Play, Pause, Search, MapPin, CheckSquare } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { runStagehand } from '../api/stagehand/run';
+import { JobSearchState, Job } from '../types/general-types';
+import StatusIndicator from './statusIndicator';
 
 interface AgentControlProps {
   onJobsFound?: (jobs: Job[]) => void;
@@ -13,28 +13,28 @@ interface AgentControlProps {
 export default function AgentControl({ onJobsFound, useMock = false }: AgentControlProps) {
   const [searchState, setSearchState] = useState<JobSearchState>({
     isSearching: false,
-    keywords: "",
-    location: "",
+    keywords: '',
+    location: '',
     remote: false,
     experience: [],
-    results: []
+    results: [],
   });
 
   const [status, setStatus] = useState<{
-    state: "idle" | "searching" | "success" | "error";
+    state: 'idle' | 'searching' | 'success' | 'error';
     message: string;
   }>({
-    state: "idle",
-    message: ""
+    state: 'idle',
+    message: '',
   });
 
   const startSearch = async () => {
     if (searchState.isSearching) return;
 
-    setSearchState(prev => ({ ...prev, isSearching: true }));
+    setSearchState((prev) => ({ ...prev, isSearching: true }));
     setStatus({
-      state: "searching",
-      message: "Searching for jobs on LinkedIn..."
+      state: 'searching',
+      message: 'Searching for jobs on LinkedIn...',
     });
 
     try {
@@ -43,44 +43,44 @@ export default function AgentControl({ onJobsFound, useMock = false }: AgentCont
         keywords: searchState.keywords,
         location: searchState.location,
         remote: searchState.remote,
-        experience: searchState.experience
+        experience: searchState.experience,
       });
 
       if (result.success) {
-        setSearchState(prev => ({
+        setSearchState((prev) => ({
           ...prev,
           isSearching: false,
-          results: result.jobs // Now guaranteed to be an array
+          results: result.jobs, // Now guaranteed to be an array
         }));
 
         setStatus({
-          state: "success",
-          message: `Found ${result.jobs.length} job listings!`
+          state: 'success',
+          message: `Found ${result.jobs.length} job listings!`,
         });
 
         if (onJobsFound) {
           onJobsFound(result.jobs);
         }
       } else {
-        console.error("Job search failed:", result.error);
-        setSearchState(prev => ({ ...prev, isSearching: false }));
+        console.error('Job search failed:', result.error);
+        setSearchState((prev) => ({ ...prev, isSearching: false }));
         setStatus({
-          state: "error",
-          message: result.error || "Failed to search for jobs"
+          state: 'error',
+          message: result.error || 'Failed to search for jobs',
         });
       }
     } catch (error) {
-      console.error("Error in job search:", error);
-      setSearchState(prev => ({ ...prev, isSearching: false }));
+      console.error('Error in job search:', error);
+      setSearchState((prev) => ({ ...prev, isSearching: false }));
       setStatus({
-        state: "error",
-        message: error instanceof Error ? error.message : "An unknown error occurred"
+        state: 'error',
+        message: error instanceof Error ? error.message : 'An unknown error occurred',
       });
     }
   };
 
   const stopSearch = async () => {
-    setSearchState(prev => ({ ...prev, isSearching: false }));
+    setSearchState((prev) => ({ ...prev, isSearching: false }));
     // Note: We would need additional logic to cancel an in-progress search
   };
 
@@ -89,21 +89,18 @@ export default function AgentControl({ onJobsFound, useMock = false }: AgentCont
       <div className="rounded-lg p-6 shadow shadow-[var(--border)] bg-[var(--input)]">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-lg font-medium text-[var(--foreground)]">
-              AI Job Search Agent
-            </h2>
+            <h2 className="text-lg font-medium text-[var(--foreground)]">AI Job Search Agent</h2>
             <p className="text-sm text-[var(--muted-foreground)]">
-              {useMock ? "(Mock Mode) " : ""}
-              The agent will search and prepare applications based on your
-              profile
+              {useMock ? '(Mock Mode) ' : ''}
+              The agent will search and prepare applications based on your profile
             </p>
           </div>
           <button
             onClick={searchState.isSearching ? stopSearch : startSearch}
             className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               searchState.isSearching
-                ? "bg-red-950 text-red-200 hover:bg-red-900"
-                : "bg-green-950 text-green-200 hover:bg-green-900"
+                ? 'bg-red-950 text-red-200 hover:bg-red-900'
+                : 'bg-green-950 text-green-200 hover:bg-green-900'
             }`}
           >
             {searchState.isSearching ? (
@@ -126,14 +123,16 @@ export default function AgentControl({ onJobsFound, useMock = false }: AgentCont
             <div className="flex-1">
               <div className="flex items-center mb-1">
                 <Search className="w-4 h-4 mr-1 text-[var(--muted-foreground)]" />
-                <label className="text-sm font-medium text-[var(--foreground)]">Job Title / Keywords</label>
+                <label className="text-sm font-medium text-[var(--foreground)]">
+                  Job Title / Keywords
+                </label>
               </div>
               <input
                 type="text"
                 placeholder="E.g., Software Engineer, Developer"
                 className="w-full px-3 py-2 border rounded-md border-[var(--border)] bg-transparent text-[var(--foreground)] placeholder-[var(--muted-foreground)]"
                 value={searchState.keywords}
-                onChange={(e) => setSearchState(prev => ({ ...prev, keywords: e.target.value }))}
+                onChange={(e) => setSearchState((prev) => ({ ...prev, keywords: e.target.value }))}
                 disabled={searchState.isSearching}
               />
             </div>
@@ -148,7 +147,7 @@ export default function AgentControl({ onJobsFound, useMock = false }: AgentCont
                 placeholder="E.g., San Francisco, Remote"
                 className="w-full px-3 py-2 border rounded-md border-[var(--border)] bg-transparent text-[var(--foreground)] placeholder-[var(--muted-foreground)]"
                 value={searchState.location}
-                onChange={(e) => setSearchState(prev => ({ ...prev, location: e.target.value }))}
+                onChange={(e) => setSearchState((prev) => ({ ...prev, location: e.target.value }))}
                 disabled={searchState.isSearching}
               />
             </div>
@@ -160,7 +159,7 @@ export default function AgentControl({ onJobsFound, useMock = false }: AgentCont
               id="remote"
               className="mr-2"
               checked={searchState.remote}
-              onChange={(e) => setSearchState(prev => ({ ...prev, remote: e.target.checked }))}
+              onChange={(e) => setSearchState((prev) => ({ ...prev, remote: e.target.checked }))}
               disabled={searchState.isSearching}
             />
             <label htmlFor="remote" className="text-sm text-[var(--foreground)]">
