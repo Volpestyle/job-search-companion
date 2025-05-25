@@ -1,7 +1,7 @@
 'use client';
 import { Play, Pause, Search, MapPin, CheckSquare } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { runStagehand } from '../api/stagehand/run';
+import { runJobSearch } from '../api/stagehand/run';
 import { JobSearchState, Job } from '../types/general-types';
 import StatusIndicator from './statusIndicator';
 import ProgressBar from './progressBar';
@@ -54,8 +54,8 @@ export default function AgentControl({ onJobsFound, useMock = false }: AgentCont
     });
 
     try {
-      // Call the server-side Stagehand function
-      const result = await runStagehand(
+      // Call the server-side job search function
+      const result = await runJobSearch(
         {
           keywords: searchState.keywords,
           location: searchState.location,

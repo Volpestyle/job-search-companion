@@ -233,9 +233,16 @@ For optimal performance on Apple Silicon (M1/M2/M3):
 
 | Model         | Size | Best For                          | Pull Command              |
 | ------------- | ---- | --------------------------------- | ------------------------- |
-| **Mistral**   | 7B   | General use, reliable extraction  | `ollama pull mistral`     |
-| **Qwen2.5**   | 7B   | Best structured data extraction   | `ollama pull qwen2.5:7b`  |
-| **Llama 3.2** | 3B   | Fastest processing, good accuracy | `ollama pull llama3.2:3b` |
+| **Qwen2.5**   | 7B   | **RECOMMENDED**: Best for Stagehand's structured responses | `ollama pull qwen2.5:7b`  |
+| **Mistral**   | 7B   | General use, but may struggle with complex JSON | `ollama pull mistral`     |
+| **Llama 3.2** | 3B   | Too small for reliable Stagehand operations | `ollama pull llama3.2:3b` |
+
+**Important**: Stagehand requires models that can reliably parse DOM trees and return structured JSON. Smaller or heavily quantized models may fail to properly identify elements.
+
+If you're experiencing issues with element detection:
+1. Try `qwen2.5:7b` - it's specifically good at structured output
+2. Ensure you're using the full model, not a heavily quantized version
+3. Check the model size - if it's under 5GB, it might be too compressed
 
 Update `OLLAMA_MODEL` in `.env.local` to switch models.
 

@@ -1,85 +1,37 @@
 'use server';
 
 /**
- * This is the server-side entry point for Stagehand integration.
- * It follows the approach from stagehand-nextjs-quickstart.
+ * This is the server-side entry point for our lightweight browser automation.
+ * Replaces Stagehand with direct Playwright + our AINavigator.
  */
 
 // Note: We can't export runtime here because this is a "use server" file
 // We'll add the runtime configuration to route.ts instead
 
-import { Stagehand } from '@browserbasehq/stagehand';
-import OpenAI from 'openai';
-import { z } from 'zod';
 import { ollamaConfig, stagehandEnv, awsConfig } from '@/app/config/environment';
 import { searchLinkedInJobs } from './main';
 import { JobSearchParams } from '@/app/types/general-types';
-import { OllamaClient } from '@/app/services/ollamaClient';
-import { StagehandConfig, StagehandEnvironment } from '@/app/types/stagehand-types';
+import { BrowserManager, BrowserConfig } from '@/app/services/browserManager';
 import { checkOllamaConnection, formatOllamaError } from '@/app/utils/ollamaCheck';
 import { logger } from '@/app/utils/logger';
 import { createFileLogger } from '@/app/utils/fileLogger';
+import { restoreConsole } from '@/app/utils/fileLogger';
 import { loadLinkedInSession, hasLinkedInSession } from '@/app/utils/linkedinSession';
 
-// Create a Stagehand configuration based on environment settings
-const createStagehandConfig = (sessionId?: string, fileLogger?: any): StagehandConfig => {
-  // Base configuration
-  const config: StagehandConfig = {
-    env: stagehandEnv.environment as StagehandEnvironment,
-    verbose: 1,
-    localBrowserLaunchOptions: {
-      headless: false,
-      viewport: {
-        width: 1280,
-        height: 800,
-      },
+// Create browser configuration based on environment settings
+const createBrowserConfig = (): BrowserConfig => {
+  return {
+    headless: false,
+    viewport: {
+      width: 1280,
+      height: 800,
     },
-    sessionId,
+    timeout: 30000,
   };
-
-  // Add additional configuration for LOCAL environment (Ollama)
-  if (stagehandEnv.environment === 'LOCAL') {
-    // Create OpenAI client for Ollama
-    const openaiClient = new OpenAI({
-      apiKey: 'ollama', // Placeholder for Ollama
-      baseURL: `http://${ollamaConfig.host}:${ollamaConfig.port}/v1`,
-    });
-
-    // Create our custom LLMClient adapter with logging
-    const llmClient = new OllamaClient({
-      modelName: ollamaConfig.modelName,
-      client: openaiClient,
-      logger: fileLogger ? (message, data) => fileLogger.info(message, data) : undefined,
-    });
-
-    // Add LLM client to config
-    return {
-      ...config,
-      llmClient: llmClient,
-    };
-  }
-
-  // TODO: For AWS environment (future implementation)
-  if (stagehandEnv.environment === 'AWS') {
-    // Note: We'll need to map Stagehand's expected configuration to AWS
-    // This is a stub for future implementation
-    return {
-      ...config,
-      // Stagehand expects "LOCAL" or "BROWSERBASE" - we use LOCAL for now
-      // In the future, we can implement a AWS-specific adapter
-      env: 'LOCAL',
-      awsConfig: {
-        region: awsConfig.region,
-        credentials: awsConfig.credentials,
-      },
-    };
-  }
-
-  return config;
 };
 
-// Run Stagehand with the provided configuration
-export async function runStagehand(params: JobSearchParams, sessionId?: string) {
+// Run job search with our lightweight browser automation
+export async function runJobSearch(params: JobSearchParams, sessionId?: string) {
   // Generate sessionId if not provided
   const currentSessionId = sessionId || `job-search-${Date.now()}`;
 
@@ -155,50 +107,25 @@ export async function runStagehand(params: JobSearchParams, sessionId?: string) 
     log.progress('initialization', 'Ollama connection verified', 10);
   }
 
-  let stagehand = null;
+  let browserManager: BrowserManager | null = null;
 
   try {
-    // Get the configuration with logger
-    const config = createStagehandConfig(currentSessionId, log);
+    // Get the browser configuration
+    const config = createBrowserConfig();
 
-    // Log config without circular references
-    const safeConfig: Partial<StagehandConfig> & {
-      hasLLMClient: boolean;
-      llmClientType?: string;
-      llmClientModel?: string;
-      hasAwsConfig?: boolean;
-    } = {
-      env: config.env,
-      verbose: config.verbose,
-      localBrowserLaunchOptions: config.localBrowserLaunchOptions,
-      sessionId: config.sessionId,
-      hasAwsConfig: !!config.awsConfig,
-      hasLLMClient: !!config.llmClient,
-      llmClientType: config.llmClient?.type,
-      llmClientModel: config.llmClient?.modelName,
-    };
+    log.debug('Browser configuration', config);
 
-    log.debug('Stagehand configuration', safeConfig);
-
-    // Create the Stagehand instance
+    // Create browser manager
     log.progress('initialization', 'Creating browser automation instance', 20);
-
-    // TODO: Customize StagehandConfig to match your needs
-    // Stagehand only accepts "LOCAL" or "BROWSERBASE" for env,
-    // so make sure we're using a compatible value
-    const stagehandCompatibleConfig = {
-      ...config,
-      env: 'LOCAL' as const, // Override to ensure Stagehand accepts our config
-    };
-    stagehand = new Stagehand(stagehandCompatibleConfig);
+    browserManager = new BrowserManager(config);
 
     // Initialize the browser
     log.progress('initialization', 'Launching browser', 30);
-    await stagehand.init();
+    await browserManager.init();
     log.progress('initialization', 'Browser launched successfully', 40);
 
     // Apply LinkedIn cookies if we have them
-    if (linkedInSession && linkedInSession.cookies && stagehand.context) {
+    if (linkedInSession && linkedInSession.cookies) {
       log.info('Applying LinkedIn session cookies', {
         cookieCount: linkedInSession.cookies.length,
       });
@@ -209,7 +136,7 @@ export async function runStagehand(params: JobSearchParams, sessionId?: string) 
           (c) => c.domain && (c.domain.includes('linkedin.com') || c.domain === '.linkedin.com')
         );
 
-        await stagehand.context.addCookies(linkedInCookies);
+        await browserManager.applyCookies(linkedInCookies);
         log.info('LinkedIn cookies applied successfully');
       } catch (error) {
         log.error('Failed to apply LinkedIn cookies', {
@@ -221,17 +148,16 @@ export async function runStagehand(params: JobSearchParams, sessionId?: string) 
     // Run the main function
     log.progress('search', 'Navigating to LinkedIn', 50);
     const jobs = await searchLinkedInJobs({
-      stagehand,
-      page: stagehand.page,
-      context: stagehand.context,
+      page: browserManager.pageInstance,
+      context: browserManager.contextInstance,
       params,
       sessionId: currentSessionId,
       logger: log,
     });
 
     // Close the browser when finished
-    if (stagehand) {
-      await stagehand.close();
+    if (browserManager) {
+      await browserManager.close();
     }
 
     // Return the results
@@ -244,14 +170,14 @@ export async function runStagehand(params: JobSearchParams, sessionId?: string) 
       sessionId: currentSessionId,
     };
   } catch (error) {
-    log.error('Error running Stagehand', {
+    log.error('Error running job search', {
       error: error instanceof Error ? error.message : error,
     });
 
     // Ensure the browser is closed on error
-    if (stagehand) {
+    if (browserManager) {
       try {
-        await stagehand.close();
+        await browserManager.close();
       } catch (closeError) {
         log.error('Error closing browser', { error: closeError });
       }
@@ -263,6 +189,9 @@ export async function runStagehand(params: JobSearchParams, sessionId?: string) 
       jobs: [],
       error: error instanceof Error ? error.message : 'An unknown error occurred',
     };
+  } finally {
+    // Always restore console to prevent memory leaks
+    restoreConsole();
   }
 }
 

@@ -1,19 +1,19 @@
 /**
- * Main job search orchestrator using Stagehand
+ * Main job search orchestrator using our lightweight browser automation
  */
 
 // Note: We can't export runtime here because this is a "use server" file
 // The runtime configuration is in route.ts
 
-import { Page, BrowserContext, Stagehand } from '@browserbasehq/stagehand';
+import { Page, BrowserContext } from 'playwright';
 import { Job, JobSearchParams } from '@/app/types/general-types';
 import { JobBoard } from '@/app/types/job-board-types';
-import { LinkedInStrategy } from './strategies/linkedin-strategy';
+import { LinkedInAIStrategy } from './strategies/linkedin-ai-strategy';
 import { BaseJobSearchStrategy } from './strategies/base-strategy';
 
 // Strategy registry
 const strategies: Record<JobBoard, BaseJobSearchStrategy | null> = {
-  linkedin: new LinkedInStrategy(),
+  linkedin: new LinkedInAIStrategy(),
   indeed: null, // Coming soon
   glassdoor: null, // Coming soon
   ziprecruiter: null, // Coming soon
@@ -26,7 +26,6 @@ const strategies: Record<JobBoard, BaseJobSearchStrategy | null> = {
 export async function searchJobs({
   page,
   context,
-  stagehand,
   params,
   sessionId,
   logger,
@@ -34,7 +33,6 @@ export async function searchJobs({
 }: {
   page: Page;
   context: BrowserContext;
-  stagehand: Stagehand;
   params: JobSearchParams;
   sessionId?: string;
   logger: any;
@@ -53,7 +51,6 @@ export async function searchJobs({
     const searchContext = {
       page,
       context,
-      stagehand,
       params,
       sessionId,
       logger,
