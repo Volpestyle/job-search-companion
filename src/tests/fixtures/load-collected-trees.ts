@@ -5,8 +5,8 @@ export interface CollectedTree {
   url: string;
   title: string;
   timestamp: string;
-  tree?: any; // Legacy format
-  nodes?: any[]; // New format with all nodes
+  nodes: any[]; // Raw accessibility nodes from Chrome
+  nodeCount: number;
 }
 
 /**
@@ -14,45 +14,81 @@ export interface CollectedTree {
  */
 export function loadCollectedTrees(): CollectedTree[] {
   const fixtureFile = path.join(__dirname, 'collected-accessibility-trees.json');
-  
+
   try {
     const data = fs.readFileSync(fixtureFile, 'utf-8');
     return JSON.parse(data);
   } catch (error) {
-    console.warn('No collected trees found. Run the agent with --fixtures flag to generate them.');
+    console.warn('No collected trees found. Run tests with RECORD_TREES=1 to generate them.');
     return [];
   }
 }
 
 /**
- * Get a random tree from collected fixtures
+ * Get trees for a specific URL
  */
-export function getRandomTree(): any[] | null {
+export function getTreesForUrl(url: string): CollectedTree[] {
   const trees = loadCollectedTrees();
-  if (trees.length === 0) return null;
-  
-  const randomIndex = Math.floor(Math.random() * trees.length);
-  const collected = trees[randomIndex];
-  return collected.nodes || (collected.tree ? [collected.tree] : null);
+  return trees.filter((tree) => tree.url === url);
 }
 
 /**
- * Get the most recent tree from collected fixtures
+ * Get the most recent tree for a URL
  */
-export function getLatestTree(): any[] | null {
-  const trees = loadCollectedTrees();
+export function getLatestTreeForUrl(url: string): CollectedTree | null {
+  const trees = getTreesForUrl(url);
   if (trees.length === 0) return null;
-  
+
   // Sort by timestamp descending
   trees.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-  const latest = trees[0];
-  return latest.nodes || (latest.tree ? [latest.tree] : null);
+  return trees[0];
 }
 
 /**
- * Get all collected trees
+ * Save new collected trees (append to existing)
  */
-export function getAllTrees(): any[][] {
+export function saveCollectedTrees(newTrees: CollectedTree[]): void {
+  const fixtureFile = path.join(__dirname, 'collected-accessibility-trees.json');
+
+  // Load existing trees
+  let existingTrees: CollectedTree[] = [];
+  try {
+    const data = fs.readFileSync(fixtureFile, 'utf-8');
+    existingTrees = JSON.parse(data);
+  } catch (error) {
+    // File doesn't exist yet, that's OK
+  }
+
+  // Append new trees
+  const allTrees = [...existingTrees, ...newTrees];
+
+  // Save back
+  fs.writeFileSync(fixtureFile, JSON.stringify(allTrees, null, 2), 'utf-8');
+  console.log(`Saved ${newTrees.length} new accessibility trees to fixtures`);
+}
+
+/**
+ * Get summary of collected trees
+ */
+export function getTreesSummary(): { url: string; count: number; latest: string }[] {
   const trees = loadCollectedTrees();
-  return trees.map(t => t.nodes || (t.tree ? [t.tree] : []));
+  const summary = new Map<string, { count: number; latest: Date }>();
+
+  for (const tree of trees) {
+    const existing = summary.get(tree.url);
+    const timestamp = new Date(tree.timestamp);
+
+    if (!existing || timestamp > existing.latest) {
+      summary.set(tree.url, {
+        count: (existing?.count || 0) + 1,
+        latest: timestamp,
+      });
+    }
+  }
+
+  return Array.from(summary.entries()).map(([url, data]) => ({
+    url,
+    count: data.count,
+    latest: data.latest.toISOString(),
+  }));
 }

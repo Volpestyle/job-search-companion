@@ -1,37 +1,24 @@
 'use server';
 
 /**
- * This is the server-side entry point for our lightweight browser automation.
- * Replaces Stagehand with direct Playwright + our AINavigator.
+ * Server-side entry point for job search automation using Stagehand
  */
 
-// Note: We can't export runtime here because this is a "use server" file
-// We'll add the runtime configuration to route.ts instead
-
-import { ollamaConfig, stagehandEnv, awsConfig } from '@/app/config/environment';
-import { searchLinkedInJobs } from './main';
-import { JobSearchParams } from '@/app/types/general-types';
-import { BrowserManager, BrowserConfig } from '@/app/services/browserManager';
+import { createStagehandWithLLM } from '@/lib/llm/llm-provider';
+import { ollamaConfig } from '@/app/config/environment';
+import { JobSearchParams, JobSearchResult } from '@/app/types/general-types';
 import { checkOllamaConnection, formatOllamaError } from '@/app/utils/ollamaCheck';
 import { logger } from '@/app/utils/logger';
 import { createFileLogger } from '@/app/utils/fileLogger';
-import { restoreConsole } from '@/app/utils/fileLogger';
-import { loadLinkedInSession, hasLinkedInSession } from '@/app/utils/linkedinSession';
+import { JobSearchService } from '@/lib/job-search/job-search-service';
+import { sendAuthUpdate } from './auth-status/route';
+import { AuthState } from '@/lib/auth/auth-flow-manager';
 
-// Create browser configuration based on environment settings
-const createBrowserConfig = (): BrowserConfig => {
-  return {
-    headless: false,
-    viewport: {
-      width: 1280,
-      height: 800,
-    },
-    timeout: 30000,
-  };
-};
-
-// Run job search with our lightweight browser automation
-export async function runJobSearch(params: JobSearchParams, sessionId?: string) {
+// Run job search with Stagehand
+export async function runJobSearch(
+  params: JobSearchParams,
+  sessionId?: string
+): Promise<JobSearchResult> {
   // Generate sessionId if not provided
   const currentSessionId = sessionId || `job-search-${Date.now()}`;
 
@@ -39,12 +26,11 @@ export async function runJobSearch(params: JobSearchParams, sessionId?: string) 
   const log = createFileLogger(currentSessionId);
 
   const timer = logger.startTimer('Job Search');
-  log.info('Starting LinkedIn job search', { params, sessionId: currentSessionId });
+  log.info('Starting job search', { params, sessionId: currentSessionId });
 
-  // Validate search parameters
-  if (!params.keywords || params.keywords.trim() === '') {
-    const errorMessage =
-      'Job keywords are required. Please enter a job title or keywords to search.';
+  // Validate search parameters (keywords and boards are now required by type)
+  if (params.keywords.trim() === '') {
+    const errorMessage = 'Job keywords cannot be empty.';
     log.error('Validation failed', { error: errorMessage });
 
     return {
@@ -54,11 +40,9 @@ export async function runJobSearch(params: JobSearchParams, sessionId?: string) 
     };
   }
 
-  // Check for LinkedIn session
-  const hasSession = await hasLinkedInSession();
-  if (!hasSession) {
-    const errorMessage = 'LinkedIn authentication required. Please run: pnpm linkedin-auth';
-    log.error('No LinkedIn session found', { error: errorMessage });
+  if (params.boards.length === 0) {
+    const errorMessage = 'At least one job board must be selected.';
+    log.error('Validation failed', { error: errorMessage });
 
     return {
       success: false,
@@ -67,26 +51,9 @@ export async function runJobSearch(params: JobSearchParams, sessionId?: string) 
     };
   }
 
-  const linkedInSession = await loadLinkedInSession();
-  if (linkedInSession) {
-    const sessionAgeHours = Math.round(
-      (Date.now() - new Date(linkedInSession.savedAt).getTime()) / (1000 * 60 * 60)
-    );
-    log.info('LinkedIn session loaded', {
-      sessionAge: `${sessionAgeHours} hours old`,
-    });
-
-    // Warn if session is getting old (li_at cookie lasts 1 year, but LinkedIn may invalidate sooner)
-    if (sessionAgeHours > 24 * 30) {
-      // 30 days
-      log.warn(
-        'LinkedIn session is over 30 days old - consider re-authenticating if you experience issues'
-      );
-    }
-  }
-
-  // Pre-flight check for Ollama if using LOCAL environment
-  if (stagehandEnv.environment === 'LOCAL') {
+  // Check connectivity if using Ollama
+  const llmProvider = process.env.LLM_PROVIDER || 'ollama';
+  if (llmProvider === 'ollama') {
     const ollamaCheck = await checkOllamaConnection(
       ollamaConfig.host,
       Number(ollamaConfig.port),
@@ -107,81 +74,82 @@ export async function runJobSearch(params: JobSearchParams, sessionId?: string) 
     log.progress('initialization', 'Ollama connection verified', 10);
   }
 
-  let browserManager: BrowserManager | null = null;
+  // Create a logger that forwards Stagehand logs to our file logger
+  const stagehandLogger = (logLine: any) => {
+    // Convert Stagehand log format to our format
+    const level = logLine.level === 0 ? 'error' : logLine.level === 1 ? 'info' : 'debug';
+    log[level](`[Stagehand] ${logLine.message}`, logLine.auxiliary);
+  };
+
+  // Initialize Stagehand with configured LLM provider
+  let stagehand;
+  try {
+    stagehand = await createStagehandWithLLM({
+      verbose: true,
+      env: (process.env.STAGEHAND_ENV as 'LOCAL' | 'AWS') || 'LOCAL',
+      domSettleTimeoutMs: 3000,
+      enableCaching: true,
+      headless: false, // Show browser for debugging
+      logger: stagehandLogger,
+      logInferenceToFile: true, // Save LLM interactions to files
+    });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Failed to initialize LLM provider';
+    log.error('Failed to create Stagehand instance', { error: errorMessage });
+    return {
+      success: false,
+      jobs: [],
+      error: errorMessage,
+    };
+  }
 
   try {
-    // Get the browser configuration
-    const config = createBrowserConfig();
+    log.progress('initialization', 'Browser launched successfully', 20);
 
-    log.debug('Browser configuration', config);
+    // Note: Session handling removed - now handled by generic auth flow
+    // The auth flow manager will detect when authentication is needed
 
-    // Create browser manager
-    log.progress('initialization', 'Creating browser automation instance', 20);
-    browserManager = new BrowserManager(config);
+    // Create job search service with the Stagehand-enhanced page
+    const jobSearchService = new JobSearchService(stagehand.page, stagehand.context, log);
 
-    // Initialize the browser
-    log.progress('initialization', 'Launching browser', 30);
-    await browserManager.init();
-    log.progress('initialization', 'Browser launched successfully', 40);
-
-    // Apply LinkedIn cookies if we have them
-    if (linkedInSession && linkedInSession.cookies) {
-      log.info('Applying LinkedIn session cookies', {
-        cookieCount: linkedInSession.cookies.length,
-      });
-
-      try {
-        // Filter and apply LinkedIn cookies
-        const linkedInCookies = linkedInSession.cookies.filter(
-          (c) => c.domain && (c.domain.includes('linkedin.com') || c.domain === '.linkedin.com')
-        );
-
-        await browserManager.applyCookies(linkedInCookies);
-        log.info('LinkedIn cookies applied successfully');
-      } catch (error) {
-        log.error('Failed to apply LinkedIn cookies', {
-          error: error instanceof Error ? error.message : error,
-        });
-      }
-    }
-
-    // Run the main function
-    log.progress('search', 'Navigating to LinkedIn', 50);
-    const jobs = await searchLinkedInJobs({
-      page: browserManager.pageInstance,
-      context: browserManager.contextInstance,
+    // Run job searches
+    log.progress('search', 'Starting job searches', 50);
+    const results = await jobSearchService.searchJobs({
       params,
+      boards: params.boards,
       sessionId: currentSessionId,
-      logger: log,
+      onAuthStateChange: (state: AuthState) => {
+        // Send auth state updates to the frontend
+        sendAuthUpdate(currentSessionId, state);
+
+        // Also log it
+        log.info('Auth state changed', { state });
+      },
     });
 
-    // Close the browser when finished
-    if (browserManager) {
-      await browserManager.close();
-    }
+    // Combine all jobs from all boards
+    const allJobs = results.flatMap((result) => result.jobs);
+
+    // Log results by board
+    results.forEach((result) => {
+      log.info(`Found ${result.jobs.length} jobs on ${result.board}`);
+    });
 
     // Return the results
-    timer.end({ jobCount: jobs.length });
+    timer.end({ jobCount: allJobs.length });
     log.progress('extraction', 'Job search completed!', 100);
 
     return {
       success: true,
-      jobs,
+      jobs: allJobs,
       sessionId: currentSessionId,
+      resultsByBoard: results,
     };
   } catch (error) {
     log.error('Error running job search', {
       error: error instanceof Error ? error.message : error,
     });
-
-    // Ensure the browser is closed on error
-    if (browserManager) {
-      try {
-        await browserManager.close();
-      } catch (closeError) {
-        log.error('Error closing browser', { error: closeError });
-      }
-    }
 
     // Return the error
     return {
@@ -190,20 +158,16 @@ export async function runJobSearch(params: JobSearchParams, sessionId?: string) 
       error: error instanceof Error ? error.message : 'An unknown error occurred',
     };
   } finally {
-    // Always restore console to prevent memory leaks
-    restoreConsole();
+    // Always close Stagehand
+    await stagehand.close();
   }
 }
 
 // Get the current configuration for client-side use
 export async function getConfig() {
   return {
-    environment: stagehandEnv.environment,
-    useMock: stagehandEnv.useMock,
     ollamaHost: ollamaConfig.host,
     ollamaPort: ollamaConfig.port,
     ollamaModel: ollamaConfig.modelName,
-    hasAwsCredentials: awsConfig.enabled,
-    awsRegion: awsConfig.region,
   };
 }

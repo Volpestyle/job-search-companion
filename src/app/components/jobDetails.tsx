@@ -26,7 +26,7 @@ export default function JobDetails({ job, onClose, onStatusChange }: JobDetailsP
     // Mock implementation for now
     setTimeout(() => {
       setJobDetails({
-        description: `This is a detailed description for the ${job.position} role at ${job.company}. 
+        description: `This is a detailed description for the ${job.title} role at ${job.company}. 
         The ideal candidate will have experience with modern web technologies and frameworks.`,
         requirements: [
           '5+ years of experience in software development',
@@ -64,7 +64,7 @@ export default function JobDetails({ job, onClose, onStatusChange }: JobDetailsP
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
       <div className="bg-[var(--background)] rounded-lg shadow-lg w-full max-w-3xl max-h-[80vh] overflow-y-auto">
         <div className="sticky top-0 bg-[var(--muted)] p-4 flex justify-between items-center border-b border-[var(--border)]">
-          <h2 className="text-lg font-medium text-[var(--foreground)]">{job.position}</h2>
+          <h2 className="text-lg font-medium text-[var(--foreground)]">{job.title}</h2>
           <button
             onClick={onClose}
             className="text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
@@ -83,7 +83,7 @@ export default function JobDetails({ job, onClose, onStatusChange }: JobDetailsP
 
             <div className="flex space-x-2">
               <a
-                href={job.previewUrl}
+                href={job.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center px-3 py-1 rounded border border-[var(--border)] text-sm hover:bg-[var(--muted)]"

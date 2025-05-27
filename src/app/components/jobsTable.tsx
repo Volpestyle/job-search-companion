@@ -84,7 +84,7 @@ export default function JobsTable({ jobs, onStatusChange }: JobsTableProps) {
                   </span>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm font-medium text-[var(--foreground)]">{job.position}</div>
+                  <div className="text-sm font-medium text-[var(--foreground)]">{job.title}</div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-sm text-[var(--muted-foreground)]">{job.company}</div>
@@ -104,7 +104,7 @@ export default function JobsTable({ jobs, onStatusChange }: JobsTableProps) {
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-sm text-[var(--muted-foreground)]">
-                    {new Date(job.lastUpdated).toLocaleDateString()}
+                    {new Date(job.updatedAt).toLocaleDateString()}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-right text-sm font-medium space-x-2">

@@ -58,7 +58,7 @@
 
 ## Debugging
 
-- **Always check `agent-logs/{sessionId}.log`** for detailed execution logs
+- **Always check `logs/{sessionId}.log`** for detailed execution logs
 - Verify progress updates are being logged
 - Set `verbose: 2` in Stagehand config for more details
 - **Common Issues:**

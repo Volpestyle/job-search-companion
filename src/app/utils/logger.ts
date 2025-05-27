@@ -2,7 +2,24 @@
  * Logger utility for consistent logging across the application
  */
 
-type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+// Log levels enum - single source of truth
+// Note: Stagehand expects numeric levels, but our logger uses string levels
+// We'll map between them as needed
+export enum LogLevel {
+  DEBUG = 'debug',
+  INFO = 'info',
+  WARN = 'warn',
+  ERROR = 'error',
+}
+
+// Map our log levels to Stagehand's numeric levels
+// Based on run.ts line 80: 0=error, 1=info, anything else=debug
+export const LOG_LEVEL_TO_NUMERIC: Record<LogLevel, number> = {
+  [LogLevel.ERROR]: 0,
+  [LogLevel.INFO]: 1,
+  [LogLevel.WARN]: 2, // Stagehand treats this as debug
+  [LogLevel.DEBUG]: 2, // Stagehand treats this as debug
+};
 
 export interface LogProgress {
   step: string;
@@ -95,15 +112,15 @@ function log(level: LogLevel, message: string, meta?: any): void {
 
 // Export logger functions
 export const logger = {
-  debug: (message: string, meta?: any) => log('debug', message, meta),
-  info: (message: string, meta?: any) => log('info', message, meta),
-  warn: (message: string, meta?: any) => log('warn', message, meta),
-  error: (message: string, meta?: any) => log('error', message, meta),
+  debug: (message: string, meta?: any) => log(LogLevel.DEBUG, message, meta),
+  info: (message: string, meta?: any) => log(LogLevel.INFO, message, meta),
+  warn: (message: string, meta?: any) => log(LogLevel.WARN, message, meta),
+  error: (message: string, meta?: any) => log(LogLevel.ERROR, message, meta),
 
   // Progress logging for UI updates
   progress: (step: string, message: string, percentage?: number, sessionId?: string) => {
     const progress: LogProgress = { step, message, percentage, sessionId };
-    log('info', `[PROGRESS] ${step}: ${message}`, { progress, percentage });
+    log(LogLevel.INFO, `[PROGRESS] ${step}: ${message}`, { progress, percentage });
 
     // Send to SSE endpoint if we're on the server and have a sessionId
     if (typeof window === 'undefined' && sessionId) {
@@ -127,7 +144,7 @@ export const logger = {
     return {
       end: (metadata?: any) => {
         const duration = Date.now() - start;
-        log('info', `[TIMER] ${label} completed in ${duration}ms`, {
+        log(LogLevel.INFO, `[TIMER] ${label} completed in ${duration}ms`, {
           ...metadata,
           duration_ms: duration,
         });

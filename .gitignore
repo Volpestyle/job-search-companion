@@ -27,7 +27,9 @@ pnpm-debug.log*
 .env*.local
 .env.development.local
 .env.test.local
+.env.test
 .env.production.local
+.session
 
 # typescript
 *.tsbuildinfo
@@ -53,8 +55,14 @@ Thumbs.db
 # LinkedIn session data
 .linkedin-session/
 
-# Agent logs
-agent-logs/
+# Application logs
+logs/
+inference_summary/
 
 # Test logs
 src/tests/logs/
+test-results/
+
+# Playwright
+playwright/.auth/
+playwright-report/

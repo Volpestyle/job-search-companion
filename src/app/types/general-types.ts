@@ -1,18 +1,26 @@
-type JobStatus = 'pending' | 'saved' | 'ignored';
+export type JobStatus = 'new' | 'saved' | 'applied' | 'ignored';
 
-interface Job {
+export interface Job {
   id: string;
+  title: string;
   company: string;
-  position: string;
   location: string;
-  salary: string;
+  description: string;
+  url: string;
+  source: string; // Dynamic - can be any job board
+  datePosted: string;
+  salary: string | null;
+  jobType: string; // 'full-time' | 'part-time' | 'contract' | 'internship' | 'temporary'
+  isRemote: boolean;
+  hasEasyApply: boolean;
   status: JobStatus;
-  lastUpdated: string;
-  previewUrl: string;
-  source?: 'linkedin' | 'indeed' | 'glassdoor' | 'ziprecruiter' | 'dice';
+  tags: string[];
+  matchScore: number | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
-interface JobSearchState {
+export interface JobSearchState {
   isSearching: boolean;
   keywords: string;
   location: string;
@@ -21,11 +29,27 @@ interface JobSearchState {
   results: Job[];
 }
 
-export interface JobSearchParams {
-  keywords?: string;
-  location?: string;
-  remote?: boolean;
-  experience?: string[];
+export interface JobBoardConfig {
+  name: string;
+  url: string;
+  searchUrl?: string;
+  customService?: boolean;
 }
 
-export type { Job, JobStatus, JobSearchState };
+export interface JobSearchParams {
+  keywords: string; // Required now
+  location?: string;
+  remote?: boolean;
+  easyApply?: boolean;
+  workType?: string;
+  experience?: string[];
+  boards: JobBoardConfig[]; // Required now
+}
+
+export interface JobSearchResult {
+  success: boolean;
+  jobs: Job[];
+  sessionId?: string;
+  resultsByBoard?: { board: string; jobs: Job[] }[];
+  error?: string;
+}
