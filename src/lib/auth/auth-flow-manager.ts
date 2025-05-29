@@ -75,7 +75,7 @@ export class AuthFlowManager {
 
     // Navigate to the board
     await this.page.goto(boardUrl, { waitUntil: 'domcontentloaded' });
-    await this.page.waitForLoadState('networkidle');
+    // Skip additional waiting - domcontentloaded is sufficient for authentication detection
 
     // Use Stagehand's observe to detect authentication state
     const authRequired = await this.detectAuthRequired();

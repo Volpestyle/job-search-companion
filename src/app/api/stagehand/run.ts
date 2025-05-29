@@ -52,7 +52,8 @@ export async function runJobSearch(
   }
 
   // Check connectivity if using Ollama
-  const llmProvider = process.env.LLM_PROVIDER || 'ollama';
+  // LLM provider validation happens in getLLMConfig()
+  const llmProvider = process.env.LLM_PROVIDER;
   if (llmProvider === 'ollama') {
     const ollamaCheck = await checkOllamaConnection(
       ollamaConfig.host,
@@ -86,7 +87,7 @@ export async function runJobSearch(
   try {
     stagehand = await createStagehandWithLLM({
       verbose: true,
-      env: (process.env.STAGEHAND_ENV as 'LOCAL' | 'AWS') || 'LOCAL',
+      env: process.env.STAGEHAND_ENV as 'LOCAL' | 'AWS',
       domSettleTimeoutMs: 3000,
       enableCaching: true,
       headless: false, // Show browser for debugging

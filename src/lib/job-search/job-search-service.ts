@@ -10,7 +10,7 @@ import { BrowserContext } from 'playwright';
 import { z } from 'zod';
 import { Job, JobSearchParams, JobBoardConfig } from '@/app/types/general-types';
 import { AuthFlowManager, AuthState } from '../auth/auth-flow-manager';
-import { getOverrideForUrl } from './site-overrides';
+// Removed site-overrides dependency for more flexible approach
 import { LogLevel } from '@/app/utils/logger';
 
 export interface JobSearchContext {
@@ -106,17 +106,22 @@ export class JobSearchService {
   }
 
   private async navigateToSearchPage(boardConfig: JobBoardConfig): Promise<void> {
-    const override = getOverrideForUrl(boardConfig.url);
-
     // If we have a specific search URL and we're not already there
     if (boardConfig.searchUrl && !this.page.url().includes(boardConfig.searchUrl)) {
       await this.page.goto(boardConfig.searchUrl, { waitUntil: 'domcontentloaded' });
-      await this.page.waitForLoadState('networkidle');
     }
-    // Or if we have navigation instructions
-    else if (override?.navigateToSearch) {
-      await this.page.act({ action: override.navigateToSearch });
-      await this.page.waitForLoadState('networkidle');
+    // Otherwise, let the AI figure out how to navigate to jobs
+    else if (!this.page.url().includes('/jobs')) {
+      try {
+        await this.page.act({
+          action: `Navigate to the jobs or careers section of this website. Look for navigation items like "Jobs", "Careers", "Find Jobs", or similar.`,
+        });
+      } catch (error) {
+        // If navigation fails, we might already be on the right page
+        this.log(LogLevel.DEBUG, 'Navigation to jobs section may have failed, continuing anyway', {
+          error,
+        });
+      }
     }
   }
 
@@ -124,33 +129,17 @@ export class JobSearchService {
     const { keywords, location, easyApply, remote } = params;
     this.log(LogLevel.INFO, 'Performing job search', { keywords, location });
 
-    const override = getOverrideForUrl(boardConfig.url);
-
-    if (override?.performSearch) {
-      // Use site-specific search if available
-      const searchAction = override.performSearch
-        .replace('{keywords}', keywords)
-        .replace('{location}', location || '');
-
-      await this.page.act({ action: searchAction });
-    } else {
-      // Generic search approach
-      await this.page.act({
-        action: `Find the job search form and type "${keywords}" in the job title or keyword field. ${location ? `Then type "${location}" in the location field.` : ''} Then submit the search.`,
-      });
-    }
+    // Use a flexible search approach that works across different job boards
+    await this.page.act({
+      action: `Find the job search form on this page. Type "${keywords}" in the field for job title, keywords, or search. ${location ? `Type "${location}" in the location or city field.` : ''} Then submit the search by clicking the search button or pressing Enter.`,
+    });
 
     // Wait for results to load
-    await this.page.waitForLoadState('networkidle');
-    await this.page.waitForTimeout(2000);
+    await this.page.waitForTimeout(3000); // Simple timeout instead of networkidle
 
     // Apply filters
     if (easyApply) {
-      if (override?.applyEasyApply) {
-        await this.page.act({ action: override.applyEasyApply });
-      } else {
-        await this.tryApplyFilter('Easy Apply', 'Quick Apply', 'Instant Apply');
-      }
+      await this.tryApplyFilter('Easy Apply', 'Quick Apply', 'Instant Apply');
     }
 
     if (remote) {
@@ -158,7 +147,7 @@ export class JobSearchService {
     }
 
     if (easyApply || remote) {
-      await this.page.waitForLoadState('networkidle');
+      await this.page.waitForTimeout(2000); // Simple timeout for filter results
     }
   }
 
@@ -179,8 +168,6 @@ export class JobSearchService {
   private async extractJobs(boardName: string): Promise<Job[]> {
     this.log(LogLevel.INFO, 'Extracting job listings');
 
-    const override = getOverrideForUrl(this.page.url());
-
     // Define Zod schema for job extraction
     const jobSchema = z.object({
       title: z.string().describe('Job title'),
@@ -200,7 +187,6 @@ export class JobSearchService {
     try {
       const result = await this.page.extract({
         instruction:
-          override?.extractJobsInstruction ||
           'Extract all job listings from the page. Include job title, company, location, posted date, salary if shown, and any application method info (like Easy Apply)',
         schema: jobsArraySchema,
       });

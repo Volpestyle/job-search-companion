@@ -12,16 +12,11 @@
     "format:check": "prettier --check .",
     "prepare": "husky",
     "lint-staged": "lint-staged",
-    "linkedin-auth": "tsx scripts/linkedin-auth.ts",
-    "test:ollama": "tsx src/tests/ollama-element-finding.test.ts",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "test:ui": "playwright test --ui",
-    "test:report": "playwright show-report",
-    "test:job-search": "tsx scripts/test-job-search.ts",
-    "test:job-search:debug": "tsx scripts/test-job-search.ts --debug",
-    "test:job-search:ui": "tsx scripts/test-job-search.ts --ui"
+    "test:report": "playwright show-report"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -35,7 +30,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "1.2.12",
     "@ai-sdk/openai": "1.3.22",
-    "@browserbasehq/stagehand": "file:../stagehand",
+    "@browserbasehq/stagehand": "file:../local-stagehand",
     "ai": "4.3.16",
     "dotenv": "16.5.0",
     "lucide-react": "^0.474.0",

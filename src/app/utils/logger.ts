@@ -56,29 +56,6 @@ function shouldLog(level: LogLevel): boolean {
 }
 
 /**
- * Sanitize sensitive data from logs
- */
-function sanitizeData(data: any): any {
-  if (!data) return data;
-
-  const sensitiveKeys = ['password', 'token', 'secret', 'key', 'credentials', 'apiKey'];
-
-  if (typeof data === 'object') {
-    const sanitized = { ...data };
-    for (const key in sanitized) {
-      if (sensitiveKeys.some((sensitive) => key.toLowerCase().includes(sensitive))) {
-        sanitized[key] = '[REDACTED]';
-      } else if (typeof sanitized[key] === 'object') {
-        sanitized[key] = sanitizeData(sanitized[key]);
-      }
-    }
-    return sanitized;
-  }
-
-  return data;
-}
-
-/**
  * Log a message at the specified level
  */
 function log(level: LogLevel, message: string, meta?: any): void {
@@ -92,20 +69,18 @@ function log(level: LogLevel, message: string, meta?: any): void {
     typeof window === 'undefined' ? `${COLORS[level]}${prefix}${COLORS.reset}` : prefix;
 
   const logMessage = `${formattedPrefix} ${message}`;
-  const sanitizedMeta = meta ? sanitizeData(meta) : undefined;
-
   switch (level) {
     case 'debug':
-      console.debug(logMessage, sanitizedMeta || '');
+      console.debug(logMessage, meta || '');
       break;
     case 'info':
-      console.info(logMessage, sanitizedMeta || '');
+      console.info(logMessage, meta || '');
       break;
     case 'warn':
-      console.warn(logMessage, sanitizedMeta || '');
+      console.warn(logMessage, meta || '');
       break;
     case 'error':
-      console.error(logMessage, sanitizedMeta || '');
+      console.error(logMessage, meta || '');
       break;
   }
 }

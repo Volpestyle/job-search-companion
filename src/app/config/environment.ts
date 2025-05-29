@@ -1,11 +1,30 @@
 // Environment configuration for server components only
 // For client components, use client-env.ts
 
+/**
+ * Validate required server environment variables
+ */
+function validateServerEnvironment(): void {
+  const missing: string[] = [];
+
+  if (!process.env.OLLAMA_HOST) missing.push('OLLAMA_HOST');
+  if (!process.env.OLLAMA_PORT) missing.push('OLLAMA_PORT');
+  if (!process.env.OLLAMA_MODEL) missing.push('OLLAMA_MODEL');
+  if (!process.env.STAGEHAND_ENV) missing.push('STAGEHAND_ENV');
+
+  if (missing.length > 0) {
+    throw new Error(`Missing required server environment variables: ${missing.join(', ')}`);
+  }
+}
+
+// Validate environment on module load
+validateServerEnvironment();
+
 // Ollama configuration
 export const ollamaConfig = {
-  host: process.env.OLLAMA_HOST || '127.0.0.1',
-  port: process.env.OLLAMA_PORT || '11434',
-  modelName: process.env.OLLAMA_MODEL || 'llama3',
+  host: process.env.OLLAMA_HOST!,
+  port: process.env.OLLAMA_PORT!,
+  modelName: process.env.OLLAMA_MODEL!,
 };
 
 // Also set public env vars for client access (without exposing sensitive data)
@@ -15,9 +34,9 @@ if (typeof process.env.NEXT_PUBLIC_OLLAMA_HOST === 'undefined') {
   process.env.NEXT_PUBLIC_OLLAMA_MODEL = ollamaConfig.modelName;
 }
 
-// AWS configuration for cloud browser sessions
+// AWS configuration for cloud browser sessions (optional)
 export const awsConfig = {
-  region: process.env.AWS_REGION || 'us-east-1',
+  region: process.env.AWS_REGION || 'us-east-1', // AWS region can have sensible default
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
@@ -27,10 +46,7 @@ export const awsConfig = {
 
 // Stagehand configuration
 export const stagehandEnv = {
-  // Use LOCAL for development, AWS for production
-  environment: process.env.STAGEHAND_ENV || 'LOCAL',
-  // Set to true to use mock data instead of real browser automation
-  useMock: process.env.USE_MOCK_DATA === 'true',
+  environment: process.env.STAGEHAND_ENV!,
   // AWS configuration (only needed if using AWS environment)
   aws: awsConfig,
 };
@@ -38,6 +54,5 @@ export const stagehandEnv = {
 // Also set public env vars for client access (without exposing sensitive data)
 if (typeof process.env.NEXT_PUBLIC_STAGEHAND_ENV === 'undefined') {
   process.env.NEXT_PUBLIC_STAGEHAND_ENV = stagehandEnv.environment;
-  process.env.NEXT_PUBLIC_USE_MOCK_DATA = stagehandEnv.useMock ? 'true' : 'false';
   process.env.NEXT_PUBLIC_HAS_AWS_CONFIG = awsConfig.enabled ? 'true' : 'false';
 }

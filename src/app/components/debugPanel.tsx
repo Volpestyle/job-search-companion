@@ -69,11 +69,6 @@ export default function DebugPanel({ isVisible = false }: DebugPanelProps) {
               <span className="text-gray-500">Environment:</span>
               <span className="col-span-2">{clientStagehandConfig.environment}</span>
 
-              <span className="text-gray-500">Mock Data:</span>
-              <span className="col-span-2">
-                {clientStagehandConfig.useMock ? 'Enabled' : 'Disabled'}
-              </span>
-
               {clientStagehandConfig.environment === 'AWS' && (
                 <>
                   <span className="text-gray-500">AWS:</span>

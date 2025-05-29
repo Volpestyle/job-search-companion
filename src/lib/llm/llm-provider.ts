@@ -13,32 +13,75 @@ export interface LLMConfig {
 }
 
 /**
+ * Validate required environment variables based on provider
+ */
+function validateEnvironmentVariables(provider: string): void {
+  const missing: string[] = [];
+
+  // Common validation
+  if (!provider) {
+    missing.push('LLM_PROVIDER');
+  }
+
+  // Provider-specific validation
+  switch (provider) {
+    case 'openai':
+      if (!process.env.OPENAI_API_KEY) missing.push('OPENAI_API_KEY');
+      if (!process.env.OPENAI_MODEL) missing.push('OPENAI_MODEL');
+      break;
+
+    case 'anthropic':
+      if (!process.env.ANTHROPIC_API_KEY) missing.push('ANTHROPIC_API_KEY');
+      if (!process.env.ANTHROPIC_MODEL) missing.push('ANTHROPIC_MODEL');
+      break;
+
+    case 'ollama':
+      if (!process.env.OLLAMA_MODEL) missing.push('OLLAMA_MODEL');
+      if (!process.env.OLLAMA_HOST) missing.push('OLLAMA_HOST');
+      if (!process.env.OLLAMA_PORT) missing.push('OLLAMA_PORT');
+      break;
+
+    default:
+      throw new Error(
+        `Unsupported LLM provider: ${provider}. Use "ollama", "openai", or "anthropic"`
+      );
+  }
+
+  if (missing.length > 0) {
+    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+  }
+}
+
+/**
  * Get LLM configuration from environment variables
  */
 export function getLLMConfig(): LLMConfig {
-  const provider = process.env.LLM_PROVIDER || 'ollama';
+  const provider = process.env.LLM_PROVIDER;
+
+  // Validate all required environment variables
+  validateEnvironmentVariables(provider!);
 
   switch (provider) {
     case 'openai':
       return {
         provider: 'openai',
-        apiKey: process.env.OPENAI_API_KEY,
-        model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
+        apiKey: process.env.OPENAI_API_KEY!,
+        model: process.env.OPENAI_MODEL!,
       };
 
     case 'anthropic':
       return {
         provider: 'anthropic',
-        apiKey: process.env.ANTHROPIC_API_KEY,
-        model: process.env.ANTHROPIC_MODEL || 'claude-4-sonnet',
+        apiKey: process.env.ANTHROPIC_API_KEY!,
+        model: process.env.ANTHROPIC_MODEL!,
       };
 
     case 'ollama':
     default:
       return {
         provider: 'ollama',
-        baseURL: `http://${process.env.OLLAMA_HOST}:${process.env.OLLAMA_PORT}`,
-        model: process.env.OLLAMA_MODEL || 'mistral:latest',
+        baseURL: `http://${process.env.OLLAMA_HOST!}:${process.env.OLLAMA_PORT!}`,
+        model: process.env.OLLAMA_MODEL!,
       };
   }
 }

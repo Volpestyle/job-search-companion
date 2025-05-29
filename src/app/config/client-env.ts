@@ -29,6 +29,4 @@ export const clientAwsConfig = {
 export const clientStagehandConfig = {
   // Default to LOCAL environment in client
   environment: process.env.NEXT_PUBLIC_STAGEHAND_ENV || 'LOCAL',
-  // Default to using mock data for safety in client-side code
-  useMock: process.env.NEXT_PUBLIC_USE_MOCK_DATA !== 'false', // default to true unless explicitly set to false
 };
