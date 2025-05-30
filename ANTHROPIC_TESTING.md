@@ -11,11 +11,13 @@ This document explains how to run integration tests using the Anthropic Claude A
 
 ### Option 1: Use the Test Environment File
 
-Copy the test environment configuration and add your API key:
+Copy the test environment configuration and configure for Anthropic:
 
 ```bash
-cp .env.test.anthropic .env.local
-# Then edit .env.local and replace 'sk-ant-api03-your-anthropic-api-key-here' with your actual API key
+cp .env.test.example .env.test
+# Then edit .env.test to:
+# 1. Set LLM_PROVIDER=anthropic
+# 2. Replace 'sk-ant-api03-your-anthropic-api-key-here' with your actual API key
 ```
 
 ### Option 2: Manual Configuration
@@ -149,6 +151,6 @@ The logs will include performance metrics for comparison.
 
 - Never commit API keys to version control
 - Use environment variables for all sensitive configuration
-- The `.env.test.anthropic` and `.env.test.example` files contain placeholders - replace with your actual keys
+- The `.env.test.example` file contains placeholders - replace with your actual keys
 - All environment files with real API keys are gitignored for security
 - Consider using different API keys for testing vs production
