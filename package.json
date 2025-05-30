@@ -16,7 +16,10 @@
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "test:ui": "playwright test --ui",
-    "test:report": "playwright show-report"
+    "test:report": "playwright show-report",
+    "test:anthropic": "playwright test src/tests/job-search-service-anthropic.spec.ts",
+    "test:anthropic:headed": "playwright test src/tests/job-search-service-anthropic.spec.ts --headed",
+    "test:anthropic:debug": "playwright test src/tests/job-search-service-anthropic.spec.ts --debug"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

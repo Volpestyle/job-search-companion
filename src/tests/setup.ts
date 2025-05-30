@@ -18,6 +18,8 @@ async function globalSetup() {
   console.log('  OLLAMA_HOST:', process.env.OLLAMA_HOST);
   console.log('  OLLAMA_PORT:', process.env.OLLAMA_PORT);
   console.log('  OLLAMA_MODEL:', process.env.OLLAMA_MODEL);
+  console.log('  ANTHROPIC_API_KEY:', process.env.ANTHROPIC_API_KEY ? '***SET***' : 'NOT_SET');
+  console.log('  ANTHROPIC_MODEL:', process.env.ANTHROPIC_MODEL);
   console.log('  STAGEHAND_ENV:', process.env.STAGEHAND_ENV);
   console.log('  HEADLESS:', process.env.HEADLESS);
 }
